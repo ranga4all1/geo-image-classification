@@ -128,12 +128,12 @@ def main():
             patience=3,
             restore_best_weights=True
         ),
-        keras.callbacks.ReduceLROnPlateau(
-            monitor='val_loss',
-            factor=0.5,
-            patience=2,
-            min_lr=1e-6
-        )
+        # keras.callbacks.ReduceLROnPlateau(
+        #     monitor='val_loss',
+        #     factor=0.5,
+        #     patience=2,
+        #     min_lr=1e-6
+        # )
     ]
 
     # Create and train model
