@@ -4,8 +4,6 @@
 
 # Import required libraries
 print("Importing required libraries...")
-import os
-import shutil
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
@@ -24,67 +22,6 @@ size_inner = 100
 droprate = 0.2
 epochs = 10
 batch_size = 32
-
-
-class SavedModelCallback(keras.callbacks.Callback):
-    """Custom callback to save the best model in SavedModel format."""
-    
-    def __init__(self, export_dir, monitor='val_accuracy', mode='max'):
-        super(SavedModelCallback, self).__init__()
-        self.export_dir = export_dir
-        self.monitor = monitor
-        self.mode = mode
-        
-        # Initialize best score and version
-        self.best_version = 0
-        if mode == 'min':
-            self.best_score = float('inf')
-        else:
-            self.best_score = float('-inf')
-    
-    def _is_improvement(self, current, reference):
-        """Check if current score is an improvement."""
-        return (self.mode == 'max' and current > reference) or \
-               (self.mode == 'min' and current < reference)
-
-    def _cleanup_old_versions(self):
-        """Remove all version directories except the best one."""
-        if os.path.exists(self.export_dir):
-            for version_dir in os.listdir(self.export_dir):
-                version_path = os.path.join(self.export_dir, version_dir)
-                if version_dir != str(self.best_version) and os.path.isdir(version_path):
-                    shutil.rmtree(version_path)
-
-    def on_epoch_end(self, epoch, logs=None):
-        logs = logs or {}
-        current_score = logs.get(self.monitor)
-        
-        if current_score is None:
-            print(f'Warning: {self.monitor} metric not found')
-            return
-        
-        if self._is_improvement(current_score, self.best_score):
-            # Update best score and version
-            self.best_score = current_score
-            self.best_version = epoch + 1
-            
-            # Create versioned directory for this epoch
-            export_path = os.path.join(self.export_dir, str(self.best_version))
-            
-            # Save the model
-            tf.keras.models.save_model(
-                self.model,
-                export_path,
-                overwrite=True,
-                include_optimizer=True,
-                save_format=None,
-                # signatures=None,
-                # options=None
-            )
-            print(f'\nNew best model (score: {current_score:.4f}) saved in SavedModel format at: {export_path}')
-            
-            # Cleanup old versions
-            self._cleanup_old_versions()
 
 
 def make_model(input_size=299, learning_rate=0.01, size_inner=100,
@@ -191,11 +128,6 @@ def main():
             patience=3,
             restore_best_weights=True
         ),
-        SavedModelCallback(
-            export_dir='saved-geo-model',
-            monitor='val_accuracy',
-            mode='max'
-        )
         # keras.callbacks.ReduceLROnPlateau(
         #     monitor='val_loss',
         #     factor=0.5,
