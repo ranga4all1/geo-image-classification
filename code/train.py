@@ -78,8 +78,8 @@ class SavedModelCallback(keras.callbacks.Callback):
                 overwrite=True,
                 include_optimizer=True,
                 save_format=None,
-                signatures=None,
-                options=None
+                # signatures=None,
+                # options=None
             )
             print(f'\nNew best model (score: {current_score:.4f}) saved in SavedModel format at: {export_path}')
             
