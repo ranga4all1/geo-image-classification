@@ -1,8 +1,11 @@
 # Save a model in a special format called tensorflow `SavedModel`.
 
 import tensorflow as tf
-from tensorflow import keras
 
-model = keras.models.load_model('./geo-model.keras')
+# Load the Keras model
+model = tf.keras.models.load_model('./geo-model.keras')
 
-tf.saved_model.save(model, 'geo-model')
+# Export the model in SavedModel format
+model.export('saved-geo-model')
+
+print("Model exported successfully in SavedModel format at: saved-geo-model")
