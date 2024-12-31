@@ -1,0 +1,10 @@
+version: "3.10"
+services:
+  saved-geo-model:
+    image: saved-geo-model:xception-001
+  gateway:
+    image: geo-gateway:001
+    environment:
+      - TF_SERVING_HOST=saved-geo-model:8500
+    ports:
+      - "9696:9696"
