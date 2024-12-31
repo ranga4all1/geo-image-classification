@@ -5,7 +5,8 @@ mkdir data
 ```
 conda create -n geo python=3.10 numpy jupyter matplotlib
 conda activate geo
-pip install tensorflow==2.18
+pip install tensorflow==2.18 grpcio==1.42.0 tensorflow-serving-api==2.7.0 keras-image-helper
+
 ```
 
 
