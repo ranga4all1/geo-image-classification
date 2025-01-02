@@ -115,3 +115,86 @@ Result:
 (geo-1) @ranga4all1 ➜ /workspaces/geo-image-classification/code (main) $ python test.py 
 {'buildings': -0.7179785370826721, 'forest': -1.896227240562439, 'glacier': 2.369765043258667, 'mountain': 1.5169345140457153, 'sea': -0.49287453293800354, 'street': -0.46033942699432373}
 ```
+
+## kind cluster
+
+```
+mkdir kube-config
+cd kube-config/
+
+kind create cluster
+```
+#### Verify
+``` 
+kubectl cluster-info --context kind-kind
+kubectl get service
+docker ps
+```
+
+### Create model deployment
+
+1. Load the model image to kind:
+``` 
+kind load docker-image saved-geo-model:xception-001
+```
+2. Create model deployment: 
+```
+kubectl apply -f model-deployment.yaml
+```
+3. Get the running pod id(name) for the model: 
+```
+kubectl get pod
+```
+4. Test the model deployment using the pod id: 
+```
+kubectl port-forward <model-pod-id> 8500:8500 
+```
+and run `gateway.py` script to get the predictions.
+
+Result:
+```
+{'buildings': -0.7047825455665588, 'forest': -1.4779146909713745, 'glacier': 2.144595146179199, 'mountain': 1.1838254928588867, 'sea': -0.41370701789855957, 'street': -0.41950517892837524}
+```
+
+<!-- ---------------- -->
+
+### Create model service
+
+1. Create model service: `kubectl apply -f model-service.yaml`
+2. Check the model service: `kubectl get service`
+3. Test the model service: `kubectl port-forward service/tf-serving-geo-model 8500:8500` and run `gateway.py` for predictions.
+Result:
+```
+{'buildings': -0.7047825455665588, 'forest': -1.4779146909713745, 'glacier': 2.144595146179199, 'mountain': 1.1838254928588867, 'sea': -0.41370701789855957, 'street': -0.41950517892837524}
+```
+
+<!-- ---------------- -->
+
+### Create gateway deployment
+
+1. Load the gateway image to kind:
+``` 
+kind load docker-image geo-gateway:001
+```
+2. Create gateway deployment: `kubectl apply -f gateway-deployment.yaml` and get the running pod id(name): `kubectl get pod`
+3. Test the gateway pod: `kubectl port-forward <gateway-pod-id> 9696:9696` and execute `test.py` to get predictions.
+
+Result:
+```
+(geo-1) @ranga4all1 ➜ /workspaces/geo-image-classification/code (main) $ python test.py 
+{'buildings': -0.7179785370826721, 'forest': -1.896227240562439, 'glacier': 2.369765043258667, 'mountain': 1.5169345140457153, 'sea': -0.49287453293800354, 'street': -0.46033942699432373}
+```
+
+<!-- ---------------- -->
+
+### Create gateway service
+
+1. Create gateway service: `kubectl apply -f gateway-service.yaml`
+2. Get service id: `kubectl get service`
+3. Test the gateway service: `kubectl port-forward service/gateway 8080:80` and replace the url on `test.py` to 8080 to get predictions.
+
+Result:
+```
+(geo-1) @ranga4all1 ➜ /workspaces/geo-image-classification/code (main) $ python test.py 
+{'buildings': -0.7179785370826721, 'forest': -1.896227240562439, 'glacier': 2.369765043258667, 'mountain': 1.5169345140457153, 'sea': -0.49287453293800354, 'street': -0.46033942699432373}
+```
