@@ -172,5 +172,6 @@ cython_debug/
 
 
 ### Added by me
+/misc/
 /code/saved-geo-model/
 .keras
