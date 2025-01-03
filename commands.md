@@ -1,3 +1,7 @@
+# Commands - Help file to use in case of any issues
+
+- Includes commands and steps to build and test 
+
 ```bash
 mkdir data
 ```
@@ -6,11 +10,7 @@ mkdir data
 conda create -n geo python=3.10 numpy jupyter matplotlib
 conda activate geo
 pip install tensorflow==2.18 grpcio tensorflow-serving-api==2.18 keras-image-helper flask
-
 ```
-
-
-<!-- ------------------------------- -->
 
 
 ## Convert model from keras model format to tf SavedModel format
@@ -48,7 +48,9 @@ saved_model_cli show --dir saved-geo-model --all | less
 saved_model_cli show --dir saved-geo-model --tag_set serve --signature_def serving_default
 ```
 
-## We can run the model (saved-geo-model) with the prebuilt docker image tensorflow/serving:2.18.0:
+## Run model
+
+-  We can run the model (saved-geo-model) with the prebuilt docker image tensorflow/serving:2.18.0:
 
 ```
 docker run -it --rm \
@@ -156,7 +158,6 @@ Result:
 {'buildings': -0.7047825455665588, 'forest': -1.4779146909713745, 'glacier': 2.144595146179199, 'mountain': 1.1838254928588867, 'sea': -0.41370701789855957, 'street': -0.41950517892837524}
 ```
 
-<!-- ---------------- -->
 
 ### Create model service
 
@@ -168,7 +169,6 @@ Result:
 {'buildings': -0.7047825455665588, 'forest': -1.4779146909713745, 'glacier': 2.144595146179199, 'mountain': 1.1838254928588867, 'sea': -0.41370701789855957, 'street': -0.41950517892837524}
 ```
 
-<!-- ---------------- -->
 
 ### Create gateway deployment
 
@@ -185,7 +185,6 @@ Result:
 {'buildings': -0.7179785370826721, 'forest': -1.896227240562439, 'glacier': 2.369765043258667, 'mountain': 1.5169345140457153, 'sea': -0.49287453293800354, 'street': -0.46033942699432373}
 ```
 
-<!-- ---------------- -->
 
 ### Create gateway service
 

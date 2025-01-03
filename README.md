@@ -56,7 +56,7 @@ The dataset was sourced from:
 - **`Python 3.10`**
 - **`conda`** for creating project level virtual environment 
 - **`JupyterLab`** for experimentation
-- **`TensorFlow`** for deep learning model development
+- **`TensorFlow and Keras`** for deep learning model development
 - **`Flask`** for REST API interface
 - **`Pipenv`** for virtual env (managing python dependencies)
 - **`Docker`** for containerization (managing system dependencies)
@@ -69,7 +69,7 @@ The dataset was sourced from:
 ### Pre-requisites
 
 1. A system with GPU is preferred for deep learning model training and experimentation
-2. Docker, kind, kubectl
+2. Conda, Docker, kind, kubectl
 
 ### Development Environment Configuration
 
@@ -278,5 +278,69 @@ For our experiments, we utilize Jupyter notebooks located in the [**`notebooks`*
   - Load and test the saved model
 
 
-## Code
+## Source Code
 
+The main application scripts are located in the [**`code`**](code/) folder. Below are the key files:
+
+- [**`gateway.py`**](code/gateway.py) - Gateway service for handling requests
+- [**`proto.py`**](code/proto.py) - Protocol buffer definitions
+- [**`saved-model.py`**](code/saved-model.py) - Script to convert Keras model to TensorFlow SavedModel format
+- [**`test-geo-model.py`**](code/test-geo-model.py) - An optional test script to test/use the geographical model in `.keras` format. This can be used as stepping stone if you decide to deploy `.keras` model in severless - for inferencing single image or as batch processing.
+- [**`test.py`**](code/test.py) - General test script
+- [**`train.py`**](code/train.py) - Script to train the model
+- [**`docker-compose.yaml`**](code/docker-compose.yaml) - Docker Compose configuration for running services
+- [**`image-gateway.dockerfile`**](code/image-gateway.dockerfile) - Dockerfile for building the gateway image
+- [**`image-model.dockerfile`**](code/image-model.dockerfile) - Dockerfile for building the model image
+- [**`Pipfile`**](code/Pipfile) - Pipenv configuration file for managing dependencies
+- [**`Pipfile.lock`**](code/Pipfile.lock) - Pipenv lock file for dependency management
+
+Additional files and directories:
+- [**`geo-model.keras`**](code/geo-model.keras) - Pre-trained Keras model file
+- [**`kube-config/`**](code/kube-config/) - Kubernetes configuration files
+  - [**`gateway-deployment`**](code/kube-config/gateway-deployment.yaml) - Kubernetes deployment config for gateway
+  - [**`gateway-service`**](code/kube-config/gateway-service.yaml) - Kubernetes service config for gateway
+  - [**`model-deployment`**](code/kube-config/model-deployment.yaml) - Kubernetes deployment config for tf-serving model
+  - [**`model-service`**](code/kube-config/model-service.yaml) - Kubernetes service config for tf-serving model
+
+  
+## Repository structure
+```
+.
+├── LICENSE
+├── README.md
+├── code
+│   ├── Pipfile
+│   ├── Pipfile.lock
+│   ├── docker-compose.yaml
+│   ├── gateway.py
+│   ├── geo-model.keras
+│   ├── image-gateway.dockerfile
+│   ├── image-model.dockerfile
+│   ├── kube-config
+│   │   ├── gateway-deployment.yaml
+│   │   ├── gateway-service.yaml
+│   │   ├── model-deployment.yaml
+│   │   └── model-service.yaml
+│   ├── proto.py
+│   ├── saved-model.py
+│   ├── test-geo-model.py
+│   ├── test.ipynb
+│   ├── test.py
+│   ├── tf-serving-connect.ipynb
+│   └── train.py
+├── commands.md
+├── data
+│   └── DATA.md
+├── images
+│   ├── building-1.jpg
+│   ├── building.jpg
+│   └── glacier.jpg
+└── notebooks
+    ├── notebook.ipynb
+    ├── use-model.ipynb
+    ├── xception_v1_09_0.904.keras
+    └── xception_v4_1_11_0.927.keras
+```
+
+
+## Cloud Infrastructure Deployment
