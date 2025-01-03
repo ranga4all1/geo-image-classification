@@ -128,7 +128,7 @@ The given SavedModel SignatureDef contains the following output(s):
       name: StatefulPartitionedCall_1:0
 Method name is: tensorflow/serving/predict
 ```
-- Note down values in square brackets: e. g. `inputs['input_layer_1']` and `outputs['output_0']`. You would need those to update a few scripts later.
+- Note down values in square brackets: e. g. `inputs['input_layer_1']` and `outputs['output_0']`. You would need those to update a script next.
 
 6. Update `gateway.py` file with your signature values and uncomment last few lines for testing e. g. It should look similar to this:
 ```
@@ -148,7 +148,7 @@ if __name__ == '__main__':
 ```
 url = "http://localhost:9696/predict"  # for use with docker local testing
 ```
-8. Run the model (saved-geo-model) with the prebuilt docker image tensorflow/serving:2.18.0:
+8. Run the model (saved-geo-model) with the prebuilt docker image `tensorflow/serving:2.18.0`:
 
 ```
 docker run -it --rm \
@@ -211,4 +211,72 @@ kubectl cluster-info --context kind-kind
 kubectl get service
 docker ps
 ```
-2.  
+2. Load images to kind
+```
+kind load docker-image saved-geo-model:xception-001
+kind load docker-image geo-gateway:001
+```
+3. Create gateway + model deployment and service
+```
+kubectl apply -f model-deployment.yaml
+kubectl apply -f model-service.yaml
+kubectl apply -f gateway-deployment.yaml
+kubectl apply -f gateway-service.yaml
+```
+#### Verify
+```
+kubectl get pod
+kubectl get service
+```
+Result:
+```
+(geo-1) @ranga4all1 ➜ /workspaces/geo-image-classification (main) $ kubectl get pod
+NAME                                   READY   STATUS    RESTARTS        AGE
+gateway-66fd949c59-d649f               1/1     Running   4 (8m17s ago)   23h
+tf-serving-geo-model-b6584758b-mw6hh   1/1     Running   4 (8m17s ago)   24h
+
+(geo-1) @ranga4all1 ➜ /workspaces/geo-image-classification (main) $ kubectl get service
+NAME                   TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+gateway                LoadBalancer   10.96.194.104   <pending>     80:32610/TCP   23h
+kubernetes             ClusterIP      10.96.0.1       <none>        443/TCP        24h
+tf-serving-geo-model   ClusterIP      10.96.40.27     <none>        8500/TCP       23h
+```
+
+4. Test using: `kubectl port-forward service/gateway 8080:80` and replace the url on `test.py` to 8080 to get predictions.
+```
+kubectl port-forward service/gateway 8080:80
+python test.py
+```
+
+Result:
+```
+(geo-1) @ranga4all1 ➜ /workspaces/geo-image-classification/code (main) $ python test.py 
+{'buildings': -0.7179785370826721, 'forest': -1.896227240562439, 'glacier': 2.369765043258667, 'mountain': 1.5169345140457153, 'sea': -0.49287453293800354, 'street': -0.46033942699432373}
+```
+
+
+## Model Development and Analysis
+
+For our experiments, we utilize Jupyter notebooks located in the [**`notebooks`**](notebooks/) folder.
+
+### Available Notebooks:
+
+- [**`notebook.ipynb`**](notebooks/notebook.ipynb)
+  - **Data Preparation**
+    - Exploratory Data Analysis (EDA)
+      - Image count
+      - Pre-process and view sample images
+
+  - **Model Development**
+    - Training the selected model using Xception
+    - Parameter tuning, regularization, dropout, and data augmentation
+    - Validation
+  - **Model Save/Load**
+    - Save the model in a `.keras` single file
+
+- [**`use-model.ipynb`**](notebooks/use-model.ipynb)
+  - Load and test the saved model
+
+
+## Code
+
