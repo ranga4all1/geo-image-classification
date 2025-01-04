@@ -1,7 +1,19 @@
-# geo-image-classification
-Classify geographical images
+# Geographical image classification
 
-![Banner](images/Geo_Image_Classification_Banner.jpg)
+Classify geographical images using a Deep Learning image classifier REST API service built on kebernetes for easy scaling.
+
+![Banner](images/banner.jpg)
+
+## Table of Contents
+
+1. [System Overview](#system-overview)
+2. [Technical Architecture](#technical-architecture)
+3. [Data Specification](#data-specification)
+4. [Technical Stack](#Technical-Stack)
+5. [Implementation Guide (Reproduce)](#implementation-guide-reproduce)
+6. [Model Development and Analysis](#model-development-and-analysis)
+7. [Source Code](#source-code)
+8. [Repository structure](#repository-structure)
 
 ## System Overview
 
@@ -51,6 +63,7 @@ The dataset was sourced from:
     - seg_test
     - seg_pred
 
+
 ## Technical Stack
 
 - **`Python 3.10`**
@@ -61,7 +74,6 @@ The dataset was sourced from:
 - **`Pipenv`** for virtual env (managing python dependencies)
 - **`Docker`** for containerization (managing system dependencies)
 - **`kind` and `kubectl`** for local kubernates deployment
-- **`AWS EKS`** for cloud deployment
 
 
 ## Implementation Guide (Reproduce)
@@ -71,6 +83,7 @@ The dataset was sourced from:
 1. A system with GPU is preferred for deep learning model training and experimentation
 2. Conda, Docker, kind, kubectl
 
+
 ### Development Environment Configuration
 
 1. Clone this repository:
@@ -78,6 +91,9 @@ The dataset was sourced from:
 git clone https://github.com/ranga4all1/geo-image-classification.git
 cd geo-image-classification
 ```
+  - Download dataset from [Kaggle](https://www.kaggle.com/datasets/puneet6060/intel-image-classification/data) into `data` folder
+  - Unzip data file
+
 2. Ceate conda environment
 ```
 conda create -n geo python=3.10 numpy jupyter matplotlib
@@ -342,5 +358,3 @@ Additional files and directories:
     └── xception_v4_1_11_0.927.keras
 ```
 
-
-## Cloud Infrastructure Deployment
