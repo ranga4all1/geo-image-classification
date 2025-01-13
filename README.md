@@ -2,6 +2,10 @@
 
 Classify geographical images using a Deep Learning image classifier REST API service built on kebernetes for easy scaling.
 
+This project aims to classify geographical images into distinct categories using a deep learning-based image classification model. The solution is deployed as a REST API service, leveraging Kubernetes for scalability and robustness. The architecture supports high-throughput requests, ensuring rapid and accurate image classification even under varying loads. This scalable infrastructure facilitates integration with larger geospatial analytics systems, enabling seamless deployment in real-world environments.
+
+Geographical image classification is crucial for various applications such as environmental monitoring, urban planning, and disaster management. 
+
 ![Banner](images/banner.jpg)
 
 ## Table of Contents
@@ -11,13 +15,14 @@ Classify geographical images using a Deep Learning image classifier REST API ser
 3. [Data Specification](#data-specification)
 4. [Technical Stack](#Technical-Stack)
 5. [Implementation Guide (Reproduce)](#implementation-guide-reproduce)
-6. [Model Development and Analysis](#model-development-and-analysis)
-7. [Source Code](#source-code)
-8. [Repository structure](#repository-structure)
+6. [Cloud Deployment](#cloud-deployment)
+7. [Model Development and Analysis](#model-development-and-analysis)
+8. [Source Code](#source-code)
+9. [Repository structure](#repository-structure)
 
 ## System Overview
 
-Geographical image classification is crucial for various applications such as environmental monitoring, urban planning, and disaster management. This project aims to classify geographical images using advanced machine learning techniques.
+This project aims to classify geographical images using advanced machine learning techniques.
 
 The solution provides a **REST API interface** running via kubernetes that allows easy scaling and integration with existing systems, making it practical for real-world applications.
 
@@ -25,9 +30,9 @@ The solution provides a **REST API interface** running via kubernetes that allow
 
 The **Geo Image Classifier** uses deep learning techniques to classify geographical images. Key aspects include:
 
-- **Multiple Model Evaluation**: The project evaluated several deep learning models including:
-  - Convolutional Neural Networks (CNN)
-  - Transfer Learning with pre-trained models
+- **Multiple Variations Evaluation**: The project evaluated Transfer Learning with variations including:
+  - With and without dropouts
+  - With and without extra inner layers
   
 - **Model Selection**: After comprehensive testing and validation, **Xception** was selected as the final model due to its:
   - Superior accuracy
@@ -74,6 +79,7 @@ The dataset was sourced from:
 - **`Pipenv`** for virtual env (managing python dependencies)
 - **`Docker`** for containerization (managing system dependencies)
 - **`kind` and `kubectl`** for local kubernates deployment
+- **`EKS`** for deploying to Elastic Kubernetes Service (EKS) cluster on AWS Cloud
 
 
 ## Implementation Guide (Reproduce)
@@ -81,7 +87,7 @@ The dataset was sourced from:
 ### Pre-requisites
 
 1. A system with GPU is preferred for deep learning model training and experimentation
-2. Conda, Docker, kind, kubectl
+2. Conda, Docker, kind, kubectl, eksctl
 
 
 ### Development Environment Configuration
@@ -270,6 +276,55 @@ Result:
 {'buildings': -0.7179785370826721, 'forest': -1.896227240562439, 'glacier': 2.369765043258667, 'mountain': 1.5169345140457153, 'sea': -0.49287453293800354, 'street': -0.46033942699432373}
 ```
 
+## Cloud deployment
+
+1. Create eks cluster: 
+```
+eksctl create cluster -f eks-config.yaml
+```
+2. Publish local docker images to ECR:
+
+- Create aws ecr repository for eks cluster: `aws ecr create-repository --repository-name geo-model-images`
+- Bash commands to run in the teminal to push docker images to ecr repository:
+```
+# Registry URI
+ACCOUNT_ID=<your-account-id>
+REGION=us-west-2
+REGISTRY_NAME=geo-model-images
+PREFIX=${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${REGISTRY_NAME}
+
+# Tag local docker images to remote tag
+GATEWAY_LOCAL=geo-gateway:001 # Gateway
+GATEWAY_REMOTE=${PREFIX}:geo-gateway-001 # notice the ':' is replaced with '-'
+docker tag ${GATEWAY_LOCAL} ${GATEWAY_REMOTE}
+
+MODEL_LOCAL=saved-geo-model:xception-001 # tf-serving model
+MODEL_REMOTE=${PREFIX}:saved-geo-model-xception-001 # same thing ':' is replaced with '-' before xception
+docker tag ${MODEL_LOCAL} ${MODEL_REMOTE}
+
+# Push tagged docker images
+docker push ${MODEL_REMOTE}
+docker push ${GATEWAY_REMOTE}
+```
+
+- Login to ecr and push images: `$(aws ecr get-login --no-include-email)`, first push the model and then gateway remote image.
+- Get the uri of these images `echo ${MODEL_REMOTE}` and `echo ${GATEWAY_REMOTE}` and add them to `model-deployment.yaml` and `gateway-deployment.yaml` respectively.
+
+3. Apply all the yaml config files to remote node coming from eks (`kubectl get nodes`):
+```
+kubectl apply -f model-deployment.yaml
+kubectl apply -f model-service.yaml
+kubectl apply -f gateway-deployment.yaml
+kubectl apply -f gateway-service.yaml
+```
+- Testing the deployment pods and services should give us predictions.
+
+4. Executing `kubectl get service` should give us the external port address which need to add in the `test.py` as access url for predictions (e.g., url = 'http://a3399e***-5180***.us-west-2-123.elb.amazonaws.com/predict').
+
+- In AWS Console GUI, you should be able to see ECR images, EC2 instances created and load balancer/DNS name for service.
+
+5. To delete the remote cluster: `eksctl delete cluster --name geo-model-eks`
+
 
 ## Model Development and Analysis
 
@@ -317,6 +372,7 @@ Additional files and directories:
   - [**`gateway-service`**](code/kube-config/gateway-service.yaml) - Kubernetes service config for gateway
   - [**`model-deployment`**](code/kube-config/model-deployment.yaml) - Kubernetes deployment config for tf-serving model
   - [**`model-service`**](code/kube-config/model-service.yaml) - Kubernetes service config for tf-serving model
+  - [**`eks-config.yaml`**](code/kube-config/eks-config.yaml) - EKS cluster config
 
   
 ## Repository structure
@@ -333,6 +389,7 @@ Additional files and directories:
 │   ├── image-gateway.dockerfile
 │   ├── image-model.dockerfile
 │   ├── kube-config
+│   │   ├── eks-config.yaml
 │   │   ├── gateway-deployment.yaml
 │   │   ├── gateway-service.yaml
 │   │   ├── model-deployment.yaml
@@ -348,6 +405,7 @@ Additional files and directories:
 ├── data
 │   └── DATA.md
 ├── images
+│   ├── banner.jpg
 │   ├── building-1.jpg
 │   ├── building.jpg
 │   └── glacier.jpg
@@ -357,4 +415,3 @@ Additional files and directories:
     ├── xception_v1_09_0.904.keras
     └── xception_v4_1_11_0.927.keras
 ```
-
